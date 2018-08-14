@@ -10,7 +10,7 @@
 * navigation_bottom_item1.xml  主界面底部导航栏菜单  
 * toolbar_top_menu1.xml  主界面顶部菜单  
 <br/>
-#### 左侧滑动栏  
+### 左侧滑动栏  
 * id为navigation_left_container  
 * 滑动栏顶部人员信息，id为navigation_left_top_head，引入布局文件navigation_left_head
 * 滑动栏中间菜单项，id为navigation_left_recyclerView，使用RecycleView动态生成
@@ -27,7 +27,7 @@
   1.登陆：id为navigation_left_button1  
   2.注册：id为navigation_left_button2
 <br/>
-#### 主界面
+### 主界面
 引入布局文件content_main.xml  
 * 顶部toolBar：id为toolBar_top_container
 * 中间内容显示区域：
@@ -36,7 +36,7 @@
   2.添加事件，id为bottom_tianjia  
   3.搜索，id为bottom_sousuo  
   4.任务查看，id为bottom_renwu<br/>
-#### 图标文件
+### 图标文件
 * 定位按钮：dingwei.xml  
 * 添加按钮：tianjia.xml  
 * 搜索按钮：sousuo.xml  
