@@ -19,6 +19,14 @@ allprojects {
     repositories {
         google()
         jcenter()
+
+        // 增加arcGIS依赖库
+        maven {
+            url 'https://esri.bintray.com/arcgis'
+        }
+
+        //增加permissionDispatcher依赖库
+        maven { url 'http://oss.jfrog.org/artifactory/oss-snapshot-local/' }
     }
 }
 

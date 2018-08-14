@@ -16,14 +16,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.esri.arcgisruntime.mapping.view.MapView;
+
 import fun.wxy.www.fragment2.navigation.BottomNavigationViewHelper;
 import fun.wxy.www.fragment2.navigation.MyRecycleViewAdapter;
 import fun.wxy.www.fragment2.navigation.NavigationItemSpace;
+
 
 public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
     private Context mContext;
+    private MapView mMapView;
+
+    private boolean internetStatus = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +65,10 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView mBottomNavigationView = findViewById(R.id.BottomNavigation_bottom_container);
         BottomNavigationViewHelper.disableShiftModel(mBottomNavigationView);
         mBottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+
+
+        //中间内容显示区域
+        mMapView = findViewById(R.id.MapView_center_container);
     }
 
     //按返回键时隐藏侧边滑动栏
@@ -124,4 +134,23 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
     };
+
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        mMapView.pause();
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        mMapView.resume();
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        mMapView.dispose();
+    }
 }
