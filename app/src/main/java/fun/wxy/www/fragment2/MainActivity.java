@@ -3,6 +3,9 @@ package fun.wxy.www.fragment2;
 import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.view.GravityCompat;
@@ -89,6 +92,12 @@ public class MainActivity extends AppCompatActivity {
 
         //中间内容显示区域
         mMapView = findViewById(R.id.MapView_center_container);
+
+        initMap();
+
+    }
+
+    private void initMap(){
         ArcGISMap arcGISMap = new ArcGISMap(Basemap.createImagery());
         mLocationDisplay = mMapView.getLocationDisplay();
         mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.NAVIGATION);
@@ -222,7 +231,25 @@ public class MainActivity extends AppCompatActivity {
     //拒绝授予定位权限且点击了不再询问时调用
     @OnNeverAskAgain({Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION})
     public void localPermissionNeverAsk(){
-        Toast.makeText(mContext,"软件无法正常使用，请到设置里同意此软件获取定位权限",Toast.LENGTH_SHORT).show();
+        //Toast.makeText(mContext,"软件无法正常使用，请到设置里同意此软件获取定位权限",Toast.LENGTH_SHORT).show();
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle(R.string.refuse_dialog_alert);
+        builder.setMessage(R.string.refuse_dialog_message);
+        builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        builder.setPositiveButton("设置", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                intent.setData(Uri.parse("package:"+getPackageName()));
+                startActivity(intent);
+            }
+        });
+        builder.create().show();
     }
     //重写onRequestPermissionResult方法
     @Override
