@@ -1,6 +1,5 @@
 package fun.wxy.www.fragment2;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,42 +16,27 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.esri.arcgisruntime.arcgisservices.ArcGISMapServiceInfo;
-import com.esri.arcgisruntime.layers.ArcGISMapImageLayer;
-import com.esri.arcgisruntime.loadable.LoadStatus;
-import com.esri.arcgisruntime.mapping.ArcGISMap;
-import com.esri.arcgisruntime.mapping.Basemap;
-import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 import com.esri.arcgisruntime.mapping.view.MapView;
 
+import java.util.List;
+
+import fun.wxy.www.fragment2.map.ShowMap;
 import fun.wxy.www.fragment2.navigation.BottomNavigationViewHelper;
 import fun.wxy.www.fragment2.navigation.MyRecycleViewAdapter;
 import fun.wxy.www.fragment2.navigation.NavigationItemSpace;
+import pub.devrel.easypermissions.EasyPermissions;
 
-import permissions.dispatcher.NeedsPermission;
-import permissions.dispatcher.OnNeverAskAgain;
-import permissions.dispatcher.OnPermissionDenied;
-import permissions.dispatcher.OnShowRationale;
-import permissions.dispatcher.PermissionRequest;
-import permissions.dispatcher.RuntimePermissions;
-
-@RuntimePermissions
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks{
 
     private DrawerLayout mDrawerLayout;
     private Context mContext;
     private MapView mMapView;
-    private LocationDisplay mLocationDisplay;
-
-    private boolean internetStatus = true;
-
-    private final String layerURL = "http://202.203.134.147:6080/arcgis/rest/services/AilaoFeature/AilaoFeatureService/MapServer";
+    private ShowMap showMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,42 +77,9 @@ public class MainActivity extends AppCompatActivity {
         //中间内容显示区域
         mMapView = findViewById(R.id.MapView_center_container);
 
-        initMap();
-
-    }
-
-    private void initMap(){
-        ArcGISMap arcGISMap = new ArcGISMap(Basemap.createImagery());
-        mLocationDisplay = mMapView.getLocationDisplay();
-        mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.NAVIGATION);
-
-        final ArcGISMapImageLayer mapImageLayer = new ArcGISMapImageLayer(layerURL);
-        mapImageLayer.addDoneLoadingListener(new Runnable() {
-            @Override
-            public void run(){
-                if(mapImageLayer.getLoadStatus()== LoadStatus.LOADED){
-                    ArcGISMapServiceInfo mapServiceInfo=mapImageLayer.getMapServiceInfo();
-                    Log.v("test2==>","图层加载成功");
-                }
-            }
-        });
-        arcGISMap.getOperationalLayers().add(mapImageLayer);
-
-        mMapView.setMap(arcGISMap);
-
-        MainActivityPermissionsDispatcher.checkInternetWithPermissionCheck(MainActivity.this);
-        MainActivityPermissionsDispatcher.getLocationProviderWithPermissionCheck(MainActivity.this);
-    }
-
-    //满足权限，显示地图
-    @NeedsPermission({Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION})
-    public void getLocationProvider(){
-        if(internetStatus){
-            mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.RECENTER);
-            mLocationDisplay.startAsync();
-        }else{
-            Toast.makeText(mContext,"没有网络访问权限，请授予网络访问权限",Toast.LENGTH_LONG).show();
-        }
+        showMap = new ShowMap(MainActivity.this,mContext,mMapView);
+        showMap.initMap();
+        showMap.drawMap();
 
     }
 
@@ -183,8 +134,7 @@ public class MainActivity extends AppCompatActivity {
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.bottom_dingwei:
-                    MainActivityPermissionsDispatcher.checkInternetWithPermissionCheck(MainActivity.this);
-                    MainActivityPermissionsDispatcher.getLocationProviderWithPermissionCheck(MainActivity.this);
+                    showMap.drawMap();
                     Toast.makeText(mContext,"定位中...",Toast.LENGTH_SHORT).show();
                     return true;
                 case R.id.bottom_tianjia:
@@ -198,64 +148,49 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    //权限管理
-    //展示为什么需要权限
-    @OnShowRationale({Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION})
-    public void showLocateRationalDialog(final PermissionRequest request){
-        new AlertDialog.Builder(mContext)
-                .setMessage("在地图上显示您的位置需要定位权限，是否授予定位权限？")
-                .setPositiveButton("允许", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        request.proceed();
-                    }
-                })
-                .setNegativeButton("拒绝", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        request.cancel();
-                    }
-                })
-                .setCancelable(false).show();
-    }
-    //获取到连接网络的权限时设置internetStatus的值为true
-    @NeedsPermission(Manifest.permission.INTERNET)
-    public void checkInternet(){
-        internetStatus = true;
-    }
-    //拒绝授予定位权限时调用
-    @OnPermissionDenied({Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION})
-    public void localPermissionDenied(){
-        Toast.makeText(mContext,"您拒绝授予定位权限，软件无法正常使用",Toast.LENGTH_SHORT).show();
-    }
-    //拒绝授予定位权限且点击了不再询问时调用
-    @OnNeverAskAgain({Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION})
-    public void localPermissionNeverAsk(){
-        //Toast.makeText(mContext,"软件无法正常使用，请到设置里同意此软件获取定位权限",Toast.LENGTH_SHORT).show();
-        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-        builder.setTitle(R.string.refuse_dialog_alert);
-        builder.setMessage(R.string.refuse_dialog_message);
-        builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
 
-            }
-        });
-        builder.setPositiveButton("设置", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                intent.setData(Uri.parse("package:"+getPackageName()));
-                startActivity(intent);
-            }
-        });
-        builder.create().show();
-    }
     //重写onRequestPermissionResult方法
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode,permissions,grantResults);
-        MainActivityPermissionsDispatcher.onRequestPermissionsResult(MainActivity.this,requestCode,grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    //获得权限
+    @Override
+    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
+        showMap.drawMap();
+    }
+
+    //拒绝权限且点击了不再提示
+    @Override
+    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
+        if(EasyPermissions.somePermissionPermanentlyDenied(MainActivity.this,perms)){
+            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+            builder.setTitle("定位权限提示");
+            builder.setMessage("为了软件的正常使用，请同意此软件使用定位权限");
+            builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Toast.makeText(mContext,"软件将无法正常使用，要正常使用软件，请在设置中同意此软件获取定位权限",Toast.LENGTH_LONG).show();
+                }
+            });
+            builder.setPositiveButton("设置", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.setData(Uri.parse("package:"+getPackageName()));
+                    startActivityForResult(intent,103);
+                }
+            });
+            builder.create().show();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        super.onActivityResult(requestCode,resultCode,data);
+        showMap.drawMap();
     }
 
     @Override
