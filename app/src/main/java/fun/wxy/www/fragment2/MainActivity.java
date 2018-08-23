@@ -14,6 +14,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -138,6 +139,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     Toast.makeText(mContext,"定位中...",Toast.LENGTH_SHORT).show();
                     return true;
                 case R.id.bottom_tianjia:
+                    Intent intent = new Intent(MainActivity.this,ShowRoute_Main.class);
+                    startActivity(intent);
                     return true;
                 case R.id.bottom_sousuo:
                     return true;
