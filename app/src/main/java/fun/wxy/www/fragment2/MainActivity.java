@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         //底部导航栏
         BottomNavigationView mBottomNavigationView = findViewById(R.id.BottomNavigation_bottom_container);
-        BottomNavigationViewHelper.disableShiftModel(mBottomNavigationView);
+        //BottomNavigationViewHelper.disableShiftModel(mBottomNavigationView);
         mBottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
 
@@ -134,10 +134,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
-                case R.id.bottom_dingwei:
-                    showMap.drawMap();
-                    Toast.makeText(mContext,"定位中...",Toast.LENGTH_SHORT).show();
-                    return true;
+//                case R.id.bottom_dingwei:
+//                    showMap.drawMap();
+//                    Toast.makeText(mContext,"定位中...",Toast.LENGTH_SHORT).show();
+//                    return true;
                 case R.id.bottom_tianjia:
                     Intent intent = new Intent(MainActivity.this,ShowRoute_Main.class);
                     startActivity(intent);
