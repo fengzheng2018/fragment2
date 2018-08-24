@@ -2,6 +2,7 @@
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -42,5 +43,20 @@
         app:itemIconTint="@drawable/navigation_bottom_selector"
         app:itemTextColor="@drawable/navigation_bottom_selector">
     </android.support.design.widget.BottomNavigationView>
+
+    <!--定位按钮-->
+    <ImageButton
+        android:id="@+id/button_zoom_in"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:src="@drawable/dingwei"
+        android:scaleType="centerInside"
+        android:background="#ffffffff"
+        app:layout_constraintBottom_toTopOf="@id/BottomNavigation_bottom_container"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:padding="8dp"
+        android:layout_marginBottom="30dp"
+        android:layout_marginStart="10dp"
+        tools:ignore="ContentDescription"/>
 
 </android.support.constraint.ConstraintLayout>

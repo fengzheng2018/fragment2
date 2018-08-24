@@ -139,8 +139,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 //                    Toast.makeText(mContext,"定位中...",Toast.LENGTH_SHORT).show();
 //                    return true;
                 case R.id.bottom_tianjia:
-                    Intent intent = new Intent(MainActivity.this,ShowRoute_Main.class);
-                    startActivity(intent);
+//                    Intent intent = new Intent(MainActivity.this,ShowRoute_Main.class);
+//                    startActivity(intent);
                     return true;
                 case R.id.bottom_sousuo:
                     return true;
