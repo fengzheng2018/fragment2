@@ -46,7 +46,7 @@
 
     <!--定位按钮-->
     <ImageButton
-        android:id="@+id/button_zoom_in"
+        android:id="@+id/button_dingwei"
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:src="@drawable/dingwei"
@@ -56,6 +56,33 @@
         app:layout_constraintLeft_toLeftOf="parent"
         android:padding="8dp"
         android:layout_marginBottom="30dp"
+        android:layout_marginStart="10dp"
+        tools:ignore="ContentDescription"/>
+
+    <!--缩放地图按钮-->
+    <ImageButton
+        android:id="@+id/button_zoom_out"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:src="@drawable/zoomout"
+        android:scaleType="centerInside"
+        android:background="#ffffffff"
+        app:layout_constraintBottom_toTopOf="@id/button_dingwei"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:padding="10dp"
+        android:layout_marginBottom="30dp"
+        android:layout_marginStart="10dp"
+        tools:ignore="ContentDescription"/>
+    <ImageButton
+        android:id="@+id/button_zoom_in"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:src="@drawable/zoomin"
+        android:scaleType="centerInside"
+        android:background="#ffffffff"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/button_zoom_out"
+        android:padding="8dp"
         android:layout_marginStart="10dp"
         tools:ignore="ContentDescription"/>
 

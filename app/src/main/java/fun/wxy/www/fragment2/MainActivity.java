@@ -14,12 +14,12 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.esri.arcgisruntime.mapping.view.MapView;
@@ -27,7 +27,6 @@ import com.esri.arcgisruntime.mapping.view.MapView;
 import java.util.List;
 
 import fun.wxy.www.fragment2.map.ShowMap;
-import fun.wxy.www.fragment2.navigation.BottomNavigationViewHelper;
 import fun.wxy.www.fragment2.navigation.MyRecycleViewAdapter;
 import fun.wxy.www.fragment2.navigation.NavigationItemSpace;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -82,6 +81,19 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         showMap.initMap();
         showMap.drawMap();
 
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+
+        ImageButton dingwei = findViewById(R.id.button_dingwei);
+        dingwei.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(mContext,"点击了定位",Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     //按返回键时隐藏侧边滑动栏
