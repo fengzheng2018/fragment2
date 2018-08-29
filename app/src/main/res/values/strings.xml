@@ -2,4 +2,7 @@
     <string name="app_name">哀牢山</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="notification_name">哀牢山</string>
+    <string name="notification_description">此通知用于向您显示软件正在工作及软件工作的状态，请始终允许软件弹出此通知，否则，您将无法正确地判断软件是否正常工作</string>
 </resources>

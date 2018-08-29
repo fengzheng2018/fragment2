@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<litepal>
+
+    <!--数据库名-->
+    <dbname value="AiLaoShan.db" />
+
+    <!--数据库版本号-->
+    <version value="1" />
+
+    <!--数据表模型映射-->
+    <list>
+        <mapping class="fun.wxy.www.fragment2.model.MyLocation" />
+        <mapping class="fun.wxy.www.fragment2.model.MyRecord"/>
+    </list>
+
+</litepal>
