@@ -19,6 +19,9 @@ import fun.wxy.www.fragment2.notification.MyNotification;
 
 public class SaveLocation extends Service {
 
+    private LocationManager locationManager;
+    private LocationStore locationStore;
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -37,7 +40,7 @@ public class SaveLocation extends Service {
 
     @Override
     public int onStartCommand(Intent intent,int flags,int startId){
-        final LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         LocationProvider provider = new LocationProvider(this,locationManager);
         final String pro = provider.initLocation();
 
@@ -67,17 +70,20 @@ public class SaveLocation extends Service {
                     }
 
                     try{
-                        locationManager.requestLocationUpdates(pro,5000,1,new LocationStore(recordCode));
+                        locationStore = new LocationStore(recordCode);
+                        locationManager.requestLocationUpdates(pro,5000,1,locationStore);
                     }catch(SecurityException e){
                         e.printStackTrace();
-                    }catch (NullPointerException e){
-                        e.printStackTrace();
+                        //出现异常，停止服务
+                        onDestroy();
                     }
 
                     Looper.loop();
                 }
             }).start();
         }
+        //处理没有获取到位置提供器的情况
+        //.......
 
         //由于异常终止服务后，服务会重新创建
         return START_REDELIVER_INTENT;
@@ -86,6 +92,13 @@ public class SaveLocation extends Service {
     @Override
     public void onDestroy(){
         super.onDestroy();
+        try{
+            //移除监听器
+            locationManager.removeUpdates(locationStore);
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
+
         stopForeground(true);
     }
 }
