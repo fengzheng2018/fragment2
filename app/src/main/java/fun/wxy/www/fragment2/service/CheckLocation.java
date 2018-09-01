@@ -1,12 +1,17 @@
 package fun.wxy.www.fragment2.service;
 
+import android.app.ActivityManager;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
+import java.util.List;
+
+import fun.wxy.www.fragment2.model.MyRecord;
 import fun.wxy.www.fragment2.utils.LocationProvider;
 
 public class CheckLocation extends IntentService {
@@ -23,7 +28,7 @@ public class CheckLocation extends IntentService {
         final double lat2 = 25.063463;
         final double lng2 = 102.758171;
         //测试半径
-        final double testRadius = 100.0;
+        final double testRadius = 20.0;
 
         LocationProvider locationProvider = new LocationProvider(locationManager);
         String pro = locationProvider.getProvider();
@@ -37,10 +42,30 @@ public class CheckLocation extends IntentService {
 
                 double distance = distanceOfTwoPoints(lat1,lng1,lat2,lng2);
 
+                //判断服务是否在运行
+                boolean isServiceRun = isServiceExisted(SaveLocation.class.getName());
+
+                Log.i("fz","计算后的距离为："+distance);
+                Log.i("fz","判断服务是否运行："+isServiceRun);
+
                 //进入指定区域，开始记录位置
                 if(distance <= testRadius){
-                    Intent saveLocationService = new Intent(this,SaveLocation.class);
-                    startService(saveLocationService);
+                    //服务没有运行，开启服务
+                    if(!isServiceRun){
+                        Intent saveLocationService = new Intent(this,SaveLocation.class);
+                        startService(saveLocationService);
+                    }
+                }else {
+                    //记录位置结束，将数据表中结束标志位置2
+                    if(isServiceRun){
+                        MyRecord myRecord = new MyRecord();
+                        myRecord.setIsOver(2);
+                        myRecord.updateAll("isOver=?","1");
+
+                        //关闭服务
+                        Intent stopLocationService = new Intent(this,SaveLocation.class);
+                        stopService(stopLocationService);
+                    }
                 }
             }catch (SecurityException e){
                 e.printStackTrace();
@@ -74,5 +99,32 @@ public class CheckLocation extends IntentService {
         s = Math.round(s * 10000) / 10000;
 
         return s;
+    }
+
+
+    /**
+     * 判断服务是否运行
+     * @param className 要检查的服务类名
+     * @return 服务在运行，返回true
+     */
+    private boolean isServiceExisted(String className){
+        boolean isWork = false;
+
+        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+
+        List<ActivityManager.RunningServiceInfo> serviceInfoList = activityManager.getRunningServices(Integer.MAX_VALUE);
+
+        if(serviceInfoList.size() <= 0){
+            return false;
+        }else {
+            for(int i=0; i<serviceInfoList.size(); i++){
+                String name = serviceInfoList.get(i).service.getClassName();
+                if(name.equals(className)){
+                    isWork = true;
+                    break;
+                }
+            }
+        }
+        return isWork;
     }
 }

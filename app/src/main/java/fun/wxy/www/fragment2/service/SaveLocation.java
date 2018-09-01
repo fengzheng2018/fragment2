@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.location.LocationManager;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
 
 import org.litepal.LitePal;
 
@@ -41,6 +42,8 @@ public class SaveLocation extends Service {
     @Override
     public int onStartCommand(Intent intent,int flags,int startId){
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        Log.i("fz","存储位置的服务被启动");
 
         LocationProvider locationProvider = new LocationProvider(locationManager);
         final String pro = locationProvider.getProvider();
@@ -101,5 +104,7 @@ public class SaveLocation extends Service {
         }
 
         stopForeground(true);
+
+        Log.i("fz","存储位置的服务被销毁");
     }
 }
