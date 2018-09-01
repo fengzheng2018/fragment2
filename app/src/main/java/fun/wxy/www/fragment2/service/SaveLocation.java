@@ -12,10 +12,10 @@ import org.litepal.LitePal;
 
 import java.util.List;
 
-import fun.wxy.www.fragment2.location.LocationProvider;
 import fun.wxy.www.fragment2.location.LocationStore;
 import fun.wxy.www.fragment2.model.MyRecord;
 import fun.wxy.www.fragment2.notification.MyNotification;
+import fun.wxy.www.fragment2.utils.LocationProvider;
 
 public class SaveLocation extends Service {
 
@@ -41,8 +41,9 @@ public class SaveLocation extends Service {
     @Override
     public int onStartCommand(Intent intent,int flags,int startId){
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        LocationProvider provider = new LocationProvider(this,locationManager);
-        final String pro = provider.initLocation();
+
+        LocationProvider locationProvider = new LocationProvider(locationManager);
+        final String pro = locationProvider.getProvider();
 
         if(pro != null){
             new Thread(new Runnable() {

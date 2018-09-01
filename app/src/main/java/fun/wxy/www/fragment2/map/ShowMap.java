@@ -3,7 +3,6 @@ package fun.wxy.www.fragment2.map;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 
 import com.esri.arcgisruntime.layers.ArcGISMapImageLayer;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
@@ -13,7 +12,8 @@ import com.esri.arcgisruntime.mapping.view.MapView;
 
 import fun.wxy.www.fragment2.permission.CheckInternet;
 import fun.wxy.www.fragment2.permission.CheckPermissions;
-import fun.wxy.www.fragment2.service.SaveLocation;
+import fun.wxy.www.fragment2.service.CheckLocation;
+import fun.wxy.www.fragment2.utils.PollingUtils;
 
 public class ShowMap {
 
@@ -48,8 +48,11 @@ public class ShowMap {
         CheckPermissions checkPermissions = new CheckPermissions(mActivity,mContext);
         if(checkPermissions.checkPermission(permissions)){
             //具有定位权限，开启服务
-            Intent intent = new Intent(mActivity, SaveLocation.class);
-            mContext.startService(intent);
+            //Intent intent = new Intent(mActivity, SaveLocation.class);
+            //mContext.startService(intent);
+
+            // 开启提醒
+            PollingUtils.startPollingService(mContext,1, CheckLocation.class);
 
             //检查是否具有联网的权限
             if(CheckInternet.isNetworkAvailable(mContext)){
