@@ -26,6 +26,7 @@ import com.esri.arcgisruntime.mapping.view.MapView;
 
 import java.util.List;
 
+import fun.wxy.www.fragment2.listener.MapZoomingPositionListener;
 import fun.wxy.www.fragment2.map.ShowMap;
 import fun.wxy.www.fragment2.navigation.MyRecycleViewAdapter;
 import fun.wxy.www.fragment2.navigation.NavigationItemSpace;
@@ -72,28 +73,26 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         BottomNavigationView mBottomNavigationView = findViewById(R.id.BottomNavigation_bottom_container);
         //BottomNavigationViewHelper.disableShiftModel(mBottomNavigationView);
         mBottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-
-
-        //中间内容显示区域
-        mMapView = findViewById(R.id.MapView_center_container);
-
-        showMap = new ShowMap(MainActivity.this,mContext,mMapView);
-        showMap.initMap();
-        showMap.drawMap();
-
     }
 
     @Override
     protected void onStart(){
         super.onStart();
 
+        //中间内容显示区域
+        mMapView = findViewById(R.id.MapView_center_container);
+
         ImageButton dingwei = findViewById(R.id.button_dingwei);
-        dingwei.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(mContext,"点击了定位",Toast.LENGTH_SHORT).show();
-            }
-        });
+        ImageButton zoomIn = findViewById(R.id.button_zoom_in);
+        ImageButton zoomOut = findViewById(R.id.button_zoom_out);
+
+        showMap = new ShowMap(MainActivity.this,mContext,mMapView,dingwei,zoomIn,zoomOut);
+        showMap.initMap();
+        showMap.drawMap();
+
+        dingwei.setOnClickListener(new MapZoomingPositionListener(showMap,mMapView));
+        zoomIn.setOnClickListener(new MapZoomingPositionListener(showMap,mMapView));
+        zoomOut.setOnClickListener(new MapZoomingPositionListener(showMap,mMapView));
     }
 
     //按返回键时隐藏侧边滑动栏
@@ -146,10 +145,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
-//                case R.id.bottom_dingwei:
-//                    showMap.drawMap();
-//                    Toast.makeText(mContext,"定位中...",Toast.LENGTH_SHORT).show();
-//                    return true;
+
                 case R.id.bottom_tianjia:
 //                    Intent intent = new Intent(MainActivity.this,ShowRoute_Main.class);
 //                    startActivity(intent);
