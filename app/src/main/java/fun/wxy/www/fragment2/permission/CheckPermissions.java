@@ -16,10 +16,7 @@ public class CheckPermissions {
     }
 
     public boolean checkPermission(String[] permissions){
-        if(EasyPermissions.hasPermissions(mContext,permissions)){
-            return true;
-        }
-        return false;
+        return (EasyPermissions.hasPermissions(mContext,permissions));
     }
 
     public void requestPermissions(String rational,int requestCode,String[] permissions){

@@ -46,12 +46,12 @@ public class MyNotification {
     /**
      * 创建通知
      */
-    public Notification showNotification(){
+    public Notification showNotification(String sms){
         return new NotificationCompat.Builder(mContext,CHANEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(BitmapFactory.decodeResource(mContext.getResources(),R.mipmap.ic_launcher))
                 .setContentTitle("哀牢山")
-                .setContentText("正在记录你的位置...")
+                .setContentText(sms)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .build();
     }

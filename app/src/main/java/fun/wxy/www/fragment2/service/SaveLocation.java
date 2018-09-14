@@ -2,12 +2,11 @@ package fun.wxy.www.fragment2.service;
 
 import android.app.Notification;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.location.LocationManager;
 import android.os.IBinder;
-import android.os.Looper;
 import android.util.Log;
+
+import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 
 import org.litepal.LitePal;
 
@@ -16,11 +15,11 @@ import java.util.List;
 import fun.wxy.www.fragment2.location.LocationStore;
 import fun.wxy.www.fragment2.model.MyRecord;
 import fun.wxy.www.fragment2.notification.MyNotification;
-import fun.wxy.www.fragment2.utils.LocationProvider;
+import fun.wxy.www.fragment2.utils.MyBaseApplication;
 
 public class SaveLocation extends Service {
 
-    private LocationManager locationManager;
+    private LocationDisplay locationDisplay;
     private LocationStore locationStore;
 
     @Override
@@ -32,28 +31,27 @@ public class SaveLocation extends Service {
     public void onCreate(){
         super.onCreate();
         final int NOTIFICATION_ID = 11;
+        String sms = "正在记录你的位置...";
+
         MyNotification myNotification = new MyNotification(this);
         myNotification.createNotificationChanel();
-        Notification notification = myNotification.showNotification();
+        Notification notification = myNotification.showNotification(sms);
 
         startForeground(NOTIFICATION_ID,notification);
     }
 
     @Override
     public int onStartCommand(Intent intent,int flags,int startId){
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         Log.i("fz","存储位置的服务被启动");
 
-        LocationProvider locationProvider = new LocationProvider(locationManager);
-        final String pro = locationProvider.getProvider();
-
-        if(pro != null){
+        MyBaseApplication baseApplication = MyBaseApplication.getInstance();
+        locationDisplay = baseApplication.getMapView().getLocationDisplay();
+        if(locationDisplay != null){
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    Looper.prepare();
-
+                    //记录标志位，标志属于哪一次记录
                     long recordCode;
 
                     //检查是否存在没有完成的记录
@@ -73,21 +71,13 @@ public class SaveLocation extends Service {
                         newRecord.save();
                     }
 
-                    try{
-                        locationStore = new LocationStore(recordCode);
-                        locationManager.requestLocationUpdates(pro,5000,1,locationStore);
-                    }catch(SecurityException e){
-                        e.printStackTrace();
-                        //出现异常，停止服务
-                        onDestroy();
-                    }
+                    //监听位置变化
+                    locationStore = new LocationStore(recordCode);
+                    locationDisplay.addLocationChangedListener(locationStore);
 
-                    Looper.loop();
                 }
             }).start();
         }
-        //处理没有获取到位置提供器的情况
-        //.......
 
         //由于异常终止服务后，服务会重新创建
         return START_REDELIVER_INTENT;
@@ -98,7 +88,7 @@ public class SaveLocation extends Service {
         super.onDestroy();
         try{
             //移除监听器
-            locationManager.removeUpdates(locationStore);
+            locationDisplay.removeLocationChangedListener(locationStore);
         }catch (NullPointerException e){
             e.printStackTrace();
         }

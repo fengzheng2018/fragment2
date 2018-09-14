@@ -1,12 +1,12 @@
 package fun.wxy.www.fragment2.location;
 
-import android.location.Location;
-import android.location.LocationListener;
-import android.os.Bundle;
+import com.esri.arcgisruntime.location.LocationDataSource;
+import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 
 import fun.wxy.www.fragment2.model.MyLocation;
 
-public class LocationStore implements LocationListener{
+public class LocationStore implements LocationDisplay.LocationChangedListener{
+
     private long recordCode;
 
     public LocationStore(long recordCode) {
@@ -14,30 +14,17 @@ public class LocationStore implements LocationListener{
     }
 
     @Override
-    public void onLocationChanged(Location location) {
+    public void onLocationChanged(LocationDisplay.LocationChangedEvent locationChangedEvent) {
+        LocationDataSource.Location location = locationChangedEvent.getLocation();
+
         MyLocation myLocation = new MyLocation();
 
         myLocation.setTime(System.currentTimeMillis());
-        myLocation.setLongitude(location.getLongitude());
-        myLocation.setLatitude(location.getLatitude());
+        myLocation.setLongitude(location.getPosition().getX());
+        myLocation.setLatitude(location.getPosition().getY());
         myLocation.setIsLoad(1);
         myLocation.setRecordCode(recordCode);
 
         myLocation.save();
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
     }
 }

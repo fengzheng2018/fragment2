@@ -3,10 +3,12 @@ package fun.wxy.www.fragment2.map;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ZoomControls;
 
 import com.esri.arcgisruntime.layers.ArcGISMapImageLayer;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
@@ -19,6 +21,8 @@ import java.lang.ref.WeakReference;
 import fun.wxy.www.fragment2.listener.MyMapScaleListener;
 import fun.wxy.www.fragment2.permission.CheckInternet;
 import fun.wxy.www.fragment2.permission.CheckPermissions;
+import fun.wxy.www.fragment2.service.HelperService;
+import fun.wxy.www.fragment2.utils.MyBaseApplication;
 
 public class ShowMap {
 
@@ -27,22 +31,23 @@ public class ShowMap {
     private MapView mMapView;
     private LocationDisplay mLocationDisplay;
 
-    private ImageButton dingwei,zoomIn,zoomOut;
+    private ZoomControls zoomControls;
+    private ImageButton dingwei;
 
-    private int requestLocateCode = 101;
-
-    public ShowMap(Activity mActivity, Context mContext,MapView mapView,ImageButton dingwei,ImageButton zoomIn,ImageButton zoomOut) {
+    public ShowMap(Activity mActivity,  ImageButton dingwei, ZoomControls zoomControls) {
         this.mActivity = mActivity;
-        this.mContext = mContext;
-        this.mMapView = mapView;
 
         this.dingwei  = dingwei;
-        this.zoomIn = zoomIn;
-        this.zoomOut = zoomOut;
+        this.zoomControls = zoomControls;
+
+        MyBaseApplication baseApplication = MyBaseApplication.getInstance();
+
+        this.mContext = baseApplication.getContext();
+        this.mMapView = baseApplication.getMapView();
     }
 
     public void initMap(){
-        ArcGISMap arcGISMap = new ArcGISMap(Basemap.createImagery());
+        ArcGISMap arcGISMap = new ArcGISMap(Basemap.Type.IMAGERY,25.063463,102.758171,16);
         mLocationDisplay = mMapView.getLocationDisplay();
         mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.RECENTER);
 
@@ -58,7 +63,7 @@ public class ShowMap {
                 handler.sendMessage(msg);
 
                 //设置比例缩放监听
-                mMapView.addMapScaleChangedListener(new MyMapScaleListener(zoomIn,zoomOut));
+                mMapView.addMapScaleChangedListener(new MyMapScaleListener(zoomControls));
             }
         });
 
@@ -71,25 +76,44 @@ public class ShowMap {
     }
 
     public void drawMap(){
-        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION};
-        CheckPermissions checkPermissions = new CheckPermissions(mActivity,mContext);
-        if(checkPermissions.checkPermission(permissions)){
-            //具有定位权限，开启服务
-            //Intent intent = new Intent(mActivity, SaveLocation.class);
-            //mContext.startService(intent);
-
-            // 开启提醒
-            //PollingUtils.startPollingService(mContext,1, CheckLocation.class);
-
+        //已经有了定位权限
+        if(permissions()){
             //检查是否具有联网的权限
             if(CheckInternet.isNetworkAvailable(mContext)){
                 mLocationDisplay.startAsync();
             }else{
                 CheckInternet.settingNetwork(mActivity);
             }
+        }
+    }
+
+    /**
+     * 每隔一分钟开启一次服务
+     */
+    public void startAlarm(){
+        if(permissions()){
+            // 开启服务
+            Intent startHelperService = new Intent(mContext, HelperService.class);
+            mContext.startService(startHelperService);
+        }
+    }
+
+    /**
+     * 检查定位权限
+     */
+    private boolean permissions(){
+        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION};
+        CheckPermissions checkPermissions = new CheckPermissions(mActivity,mContext);
+
+        //请求码
+        int requestLocateCode = 101;
+
+        if(checkPermissions.checkPermission(permissions)){
+            return true;
         }else {
             String rational = "无法获取到定位权限软件将无法使用，现在去设置界面打开定位权限？";
             checkPermissions.requestPermissions(rational,requestLocateCode,permissions);
+            return false;
         }
     }
 
@@ -115,8 +139,7 @@ public class ShowMap {
                 switch (msg.what){
                     case 501:{
                         dingwei.setVisibility(View.VISIBLE);
-                        zoomIn.setVisibility(View.VISIBLE);
-                        zoomOut.setVisibility(View.VISIBLE);
+                        zoomControls.setVisibility(View.VISIBLE);
 
                         break;
                     }

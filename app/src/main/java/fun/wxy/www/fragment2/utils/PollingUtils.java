@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
+import android.widget.Toast;
 
 public class PollingUtils {
     //请求码
@@ -17,9 +18,12 @@ public class PollingUtils {
      * @param seconds 间隔执行的时间，单位：秒
      * @param cls 要启动的类
      */
-    public static void startPollingService(Context context,int seconds,Class<?> cls){
-        //在睡眠状态下会唤醒系统执行提示功能
+    public static void startPollingService( int seconds, Class<?> cls){
+        //在睡眠状态下会唤醒系统执行提示功能，使用相对时间
         int alarmType = AlarmManager.ELAPSED_REALTIME_WAKEUP;
+
+        MyBaseApplication myBaseApplication = MyBaseApplication.getInstance();
+        Context context = myBaseApplication.aContext();
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
@@ -27,17 +31,27 @@ public class PollingUtils {
         PendingIntent pendingIntent = PendingIntent.getService(context,REQUEST_CODE,intent,PENDING_TYPE);
 
         //自系统启动以来的时间，包括睡眠时间
-        long triggerAtTime = SystemClock.elapsedRealtime();
+        long triggerAtTime = SystemClock.elapsedRealtime() + seconds * 1000;
 
-        //重复提醒
-        alarmManager.setRepeating( alarmType, triggerAtTime,seconds * 1000, pendingIntent);
+        //提醒一次
+        try{
+            alarmManager.set( alarmType,triggerAtTime, pendingIntent);
+        }catch (NullPointerException e) {
+            e.printStackTrace();
+            Toast.makeText(context,"pendingIntent为空",Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     /**
      * 停止提醒
      * @param cls 要停止的类
      */
-    public static void stopPollingService(Context context,Class<?> cls){
+    public static void stopPollingService(Class<?> cls){
+
+        MyBaseApplication myBaseApplication = MyBaseApplication.getInstance();
+        Context context = myBaseApplication.aContext();
+
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(context,cls);

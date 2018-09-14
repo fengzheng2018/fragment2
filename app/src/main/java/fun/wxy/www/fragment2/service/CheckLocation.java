@@ -2,76 +2,113 @@ package fun.wxy.www.fragment2.service;
 
 import android.app.ActivityManager;
 import android.app.IntentService;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
-import android.location.LocationManager;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+
+import com.esri.arcgisruntime.location.LocationDataSource;
+import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 
 import java.util.List;
 
 import fun.wxy.www.fragment2.model.MyRecord;
-import fun.wxy.www.fragment2.utils.LocationProvider;
+import fun.wxy.www.fragment2.utils.MyBaseApplication;
 
 public class CheckLocation extends IntentService {
+
+    private double distance;
+
+    //测试半径
+    private final double testRadius = 50.0;
+    //服务是否在运行
+    private boolean isServiceRun = false;
 
     public CheckLocation() {
         super("CheckLocation");
     }
 
     @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+    protected void onHandleIntent(@Nullable final Intent intent) {
 
-        // 测试位置
-        final double lat2 = 25.063463;
-        final double lng2 = 102.758171;
-        //测试半径
-        final double testRadius = 20.0;
+        MyBaseApplication baseApplication = MyBaseApplication.getInstance();
 
-        LocationProvider locationProvider = new LocationProvider(locationManager);
-        String pro = locationProvider.getProvider();
+        LocationDisplay locationDisplay = baseApplication.getMapView().getLocationDisplay();
+        if(locationDisplay != null){
 
-        if(pro != null){
+            locationDisplay.startAsync();
+            locationDisplay.addLocationChangedListener(new MyLocationChangeListener(locationDisplay));
 
-            try{
-                Location location = locationManager.getLastKnownLocation(pro);
-                double lat1 = location.getLatitude();
-                double lng1 = location.getLongitude();
-
-                double distance = distanceOfTwoPoints(lat1,lng1,lat2,lng2);
-
-                //判断服务是否在运行
-                boolean isServiceRun = isServiceExisted(SaveLocation.class.getName());
-
-                Log.i("fz","计算后的距离为："+distance);
-                Log.i("fz","判断服务是否运行："+isServiceRun);
-
-                //进入指定区域，开始记录位置
-                if(distance <= testRadius){
-                    //服务没有运行，开启服务
-                    if(!isServiceRun){
-                        Intent saveLocationService = new Intent(this,SaveLocation.class);
-                        startService(saveLocationService);
-                    }
-                }else {
-                    //记录位置结束，将数据表中结束标志位置2
-                    if(isServiceRun){
-                        MyRecord myRecord = new MyRecord();
-                        myRecord.setIsOver(2);
-                        myRecord.updateAll("isOver=?","1");
-
-                        //关闭服务
-                        Intent stopLocationService = new Intent(this,SaveLocation.class);
-                        stopService(stopLocationService);
-                    }
-                }
-            }catch (SecurityException e){
-                e.printStackTrace();
-            }
         }
     }
+
+    /**
+     * 位置改变监听内部类
+     */
+    private class MyLocationChangeListener implements LocationDisplay.LocationChangedListener{
+
+        private LocationDisplay locationDisplay;
+
+        private MyLocationChangeListener(LocationDisplay locationDisplay) {
+            this.locationDisplay = locationDisplay;
+        }
+
+        // 测试位置
+        final double lat2 = 25.0592;
+        final double lng2 = 102.7512;
+
+        @Override
+        public void onLocationChanged(LocationDisplay.LocationChangedEvent locationChangedEvent) {
+            LocationDataSource.Location location = locationChangedEvent.getLocation();
+
+            double lat1 = location.getPosition().getY();
+            double lng1 = location.getPosition().getX();
+
+            Log.i("fz","获取的经度："+lat1+"，获取的纬度："+lng1);
+
+            distance = distanceOfTwoPoints(lat1,lng1,lat2,lng2);
+
+            //判断服务是否在运行
+            isServiceRun = isServiceExisted(SaveLocation.class.getName());
+
+            Log.i("fz","计算后的距离为："+distance);
+            Log.i("fz","判断服务是否运行："+isServiceRun);
+
+            //进入指定区域，开始记录位置
+            if(distance <= testRadius){
+                //服务没有运行，开启服务
+                if(!isServiceRun){
+                    Intent saveLocationService = new Intent(CheckLocation.this,SaveLocation.class);
+                    startService(saveLocationService);
+                }
+            }else {
+                //记录位置结束，将数据表中结束标志位置2
+                if(isServiceRun){
+                    MyRecord myRecord = new MyRecord();
+                    myRecord.setIsOver(2);
+                    myRecord.updateAll("isOver=?","1");
+
+                    //关闭服务
+                    Intent stopLocationService = new Intent(CheckLocation.this,SaveLocation.class);
+                    stopService(stopLocationService);
+                }
+            }
+
+            //绑定服务
+            Intent bindHelper = new Intent(CheckLocation.this,SaveLocation.class);
+            bindService(bindHelper,connService,BIND_AUTO_CREATE);
+
+            locationDisplay.stop();
+            //结束监听
+            locationDisplay.removeLocationChangedListener(MyLocationChangeListener.this);
+
+        }
+    }
+
+
 
     /**
      * 计算两点之间的距离
@@ -108,6 +145,7 @@ public class CheckLocation extends IntentService {
      * @return 服务在运行，返回true
      */
     private boolean isServiceExisted(String className){
+
         boolean isWork = false;
 
         ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -127,4 +165,26 @@ public class CheckLocation extends IntentService {
         }
         return isWork;
     }
+
+
+    private ServiceConnection connService = new ServiceConnection(){
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            HelperService.SetCheckTime setCheckTime = (HelperService.SetCheckTime) service;
+            if(isServiceRun){
+                setCheckTime.inAreaAlarm(testRadius,distance);
+            }else {
+                setCheckTime.outAreaAlarm(distance);
+            }
+
+            //解绑服务
+            unbindService(connService);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            //服务已被系统杀死，提示用户
+        }
+    };
 }

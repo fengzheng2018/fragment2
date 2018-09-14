@@ -20,7 +20,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
-        android:name="org.litepal.LitePalApplication"
+        android:name=".utils.MyBaseApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -34,13 +34,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ShowRoute_Main"></activity>
+        <activity android:name=".ShowRoute_Main" />
 
-        <!--保存位置服务类-->
-        <service android:name=".service.SaveLocation"/>
-        <!--检测当前位置服务类-->
-        <service android:name=".service.CheckLocation"/>
-
+        <!-- 保存位置服务类 -->
+        <service android:name=".service.SaveLocation" />
+        <!-- 检测当前位置服务类 -->
+        <service android:name=".service.CheckLocation" />
+        <!--帮助服务类，管理检测位置的服务-->
+        <service
+            android:name=".service.HelperService"
+            android:enabled="true"
+            android:exported="false"/>
     </application>
 
 </manifest>

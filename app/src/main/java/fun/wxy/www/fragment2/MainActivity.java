@@ -21,15 +21,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
+import android.widget.ZoomControls;
 
 import com.esri.arcgisruntime.mapping.view.MapView;
 
 import java.util.List;
 
-import fun.wxy.www.fragment2.listener.MapZoomingPositionListener;
+import fun.wxy.www.fragment2.listener.DingweiListener;
+import fun.wxy.www.fragment2.listener.ZoominListener;
+import fun.wxy.www.fragment2.listener.ZoomoutListener;
 import fun.wxy.www.fragment2.map.ShowMap;
 import fun.wxy.www.fragment2.navigation.MyRecycleViewAdapter;
 import fun.wxy.www.fragment2.navigation.NavigationItemSpace;
+
+import fun.wxy.www.fragment2.utils.MyBaseApplication;
 import pub.devrel.easypermissions.EasyPermissions;
 
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks{
@@ -83,16 +88,25 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mMapView = findViewById(R.id.MapView_center_container);
 
         ImageButton dingwei = findViewById(R.id.button_dingwei);
-        ImageButton zoomIn = findViewById(R.id.button_zoom_in);
-        ImageButton zoomOut = findViewById(R.id.button_zoom_out);
+        ZoomControls zoomControls = findViewById(R.id.zoomControl);
 
-        showMap = new ShowMap(MainActivity.this,mContext,mMapView,dingwei,zoomIn,zoomOut);
+
+        MyBaseApplication baseApplication = MyBaseApplication.getInstance();
+        baseApplication.setContext(mContext);
+        baseApplication.setMapView(mMapView);
+
+        showMap = new ShowMap(MainActivity.this,dingwei,zoomControls);
         showMap.initMap();
         showMap.drawMap();
+        showMap.startAlarm();
 
-        dingwei.setOnClickListener(new MapZoomingPositionListener(showMap,mMapView));
-        zoomIn.setOnClickListener(new MapZoomingPositionListener(showMap,mMapView));
-        zoomOut.setOnClickListener(new MapZoomingPositionListener(showMap,mMapView));
+        ZoominListener zoominListener = new ZoominListener(mMapView,zoomControls);
+        ZoomoutListener zoomoutListener = new ZoomoutListener(mMapView,zoomControls);
+        DingweiListener dingweiListener = new DingweiListener(showMap);
+
+        dingwei.setOnClickListener(dingweiListener);
+        zoomControls.setOnZoomInClickListener(zoominListener);
+        zoomControls.setOnZoomOutClickListener(zoomoutListener);
     }
 
     //按返回键时隐藏侧边滑动栏

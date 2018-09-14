@@ -61,32 +61,14 @@
         tools:ignore="ContentDescription"/>
 
     <!--缩放地图按钮-->
-    <ImageButton
-        android:id="@+id/button_zoom_out"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:src="@drawable/zoomout"
-        android:scaleType="centerInside"
-        android:background="#ffffffff"
-        app:layout_constraintBottom_toTopOf="@id/button_dingwei"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:padding="10dp"
-        android:layout_marginBottom="30dp"
-        android:layout_marginStart="10dp"
+    <ZoomControls
+        android:id="@+id/zoomControl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="20dp"
         android:visibility="invisible"
-        tools:ignore="ContentDescription"/>
-    <ImageButton
-        android:id="@+id/button_zoom_in"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:src="@drawable/zoomin"
-        android:scaleType="centerInside"
-        android:background="#ffffffff"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/button_zoom_out"
-        android:padding="8dp"
-        android:layout_marginStart="10dp"
-        android:visibility="invisible"
-        tools:ignore="ContentDescription"/>
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/BottomNavigation_bottom_container"/>
 
 </android.support.constraint.ConstraintLayout>
