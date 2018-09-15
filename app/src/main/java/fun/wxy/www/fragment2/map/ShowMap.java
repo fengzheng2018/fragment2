@@ -88,7 +88,7 @@ public class ShowMap {
     }
 
     /**
-     * 每隔一分钟开启一次服务
+     * 开启HelperService服务
      */
     public void startAlarm(){
         if(permissions()){

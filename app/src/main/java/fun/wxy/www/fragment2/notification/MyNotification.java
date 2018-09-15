@@ -45,14 +45,24 @@ public class MyNotification {
 
     /**
      * 创建通知
+     * @param contentID 通知内容字符串ID
+     * @param tickerID 在通知栏弹出的内容字符串ID
+     * @param voice 是否发出声音（包括震动）
+     * @return notification对象
      */
-    public Notification showNotification(String sms){
-        return new NotificationCompat.Builder(mContext,CHANEL_ID)
+    public Notification showNotification(int contentID,int tickerID,boolean voice){
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(mContext,CHANEL_ID);
+        notificationBuilder
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(BitmapFactory.decodeResource(mContext.getResources(),R.mipmap.ic_launcher))
                 .setContentTitle("哀牢山")
-                .setContentText(sms)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .build();
+                .setContentText(mContext.getResources().getString(contentID))
+                .setTicker(mContext.getResources().getString(tickerID))
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        if(voice){
+            notificationBuilder.setDefaults(Notification.DEFAULT_ALL);
+        }
+        return notificationBuilder.build();
     }
 }

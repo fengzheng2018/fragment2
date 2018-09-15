@@ -12,6 +12,7 @@ import org.litepal.LitePal;
 
 import java.util.List;
 
+import fun.wxy.www.fragment2.R;
 import fun.wxy.www.fragment2.location.LocationStore;
 import fun.wxy.www.fragment2.model.MyRecord;
 import fun.wxy.www.fragment2.notification.MyNotification;
@@ -31,11 +32,10 @@ public class SaveLocation extends Service {
     public void onCreate(){
         super.onCreate();
         final int NOTIFICATION_ID = 11;
-        String sms = "正在记录你的位置...";
 
         MyNotification myNotification = new MyNotification(this);
         myNotification.createNotificationChanel();
-        Notification notification = myNotification.showNotification(sms);
+        Notification notification = myNotification.showNotification(R.string.notification_status2,R.string.notification_ticker2,true);
 
         startForeground(NOTIFICATION_ID,notification);
     }

@@ -23,7 +23,7 @@ public class CheckLocation extends IntentService {
     private double distance;
 
     //测试半径
-    private final double testRadius = 50.0;
+    private final double testRadius = 100.0;
     //服务是否在运行
     private boolean isServiceRun = false;
 
@@ -45,6 +45,12 @@ public class CheckLocation extends IntentService {
         }
     }
 
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        Log.i("fz","检查位置的服务类被销毁");
+    }
+
     /**
      * 位置改变监听内部类
      */
@@ -57,53 +63,58 @@ public class CheckLocation extends IntentService {
         }
 
         // 测试位置
-        final double lat2 = 25.0592;
-        final double lng2 = 102.7512;
+        final double lat2 = 25.063463;
+        final double lng2 = 102.758171;
 
         @Override
         public void onLocationChanged(LocationDisplay.LocationChangedEvent locationChangedEvent) {
             LocationDataSource.Location location = locationChangedEvent.getLocation();
 
-            double lat1 = location.getPosition().getY();
-            double lng1 = location.getPosition().getX();
+            if(location != null){
+                double lat1 = location.getPosition().getY();
+                double lng1 = location.getPosition().getX();
 
-            Log.i("fz","获取的经度："+lat1+"，获取的纬度："+lng1);
+                Log.i("fz","获取的经度："+lat1+"，获取的纬度："+lng1);
 
-            distance = distanceOfTwoPoints(lat1,lng1,lat2,lng2);
+                distance = distanceOfTwoPoints(lat1,lng1,lat2,lng2);
 
-            //判断服务是否在运行
-            isServiceRun = isServiceExisted(SaveLocation.class.getName());
+                //判断服务是否在运行
+                isServiceRun = isServiceExisted(SaveLocation.class.getName());
 
-            Log.i("fz","计算后的距离为："+distance);
-            Log.i("fz","判断服务是否运行："+isServiceRun);
+                Log.i("fz","计算后的距离为："+distance);
+                Log.i("fz","判断服务是否运行："+isServiceRun);
 
-            //进入指定区域，开始记录位置
-            if(distance <= testRadius){
-                //服务没有运行，开启服务
-                if(!isServiceRun){
-                    Intent saveLocationService = new Intent(CheckLocation.this,SaveLocation.class);
-                    startService(saveLocationService);
+                //进入指定区域，开始记录位置
+                if(distance <= testRadius){
+                    //服务没有运行，开启服务
+                    if(!isServiceRun){
+                        Log.i("fz","准备开启保存位置的服务");
+
+                        Intent saveLocationService = new Intent(CheckLocation.this,SaveLocation.class);
+                        startService(saveLocationService);
+                    }
+                }else {
+                    //记录位置结束，将数据表中结束标志位置2
+                    if(isServiceRun){
+                        MyRecord myRecord = new MyRecord();
+                        myRecord.setIsOver(2);
+                        myRecord.updateAll("isOver=?","1");
+
+                        //关闭服务
+                        Log.i("fz","准备关闭保存位置的服务");
+                        Intent stopLocationService = new Intent(CheckLocation.this,SaveLocation.class);
+                        stopService(stopLocationService);
+                    }
                 }
-            }else {
-                //记录位置结束，将数据表中结束标志位置2
-                if(isServiceRun){
-                    MyRecord myRecord = new MyRecord();
-                    myRecord.setIsOver(2);
-                    myRecord.updateAll("isOver=?","1");
 
-                    //关闭服务
-                    Intent stopLocationService = new Intent(CheckLocation.this,SaveLocation.class);
-                    stopService(stopLocationService);
-                }
+                //绑定服务
+                Intent bindHelper = new Intent(CheckLocation.this,HelperService.class);
+                bindService(bindHelper,connService,BIND_AUTO_CREATE);
+
+                locationDisplay.stop();
+                //结束监听
+                locationDisplay.removeLocationChangedListener(MyLocationChangeListener.this);
             }
-
-            //绑定服务
-            Intent bindHelper = new Intent(CheckLocation.this,SaveLocation.class);
-            bindService(bindHelper,connService,BIND_AUTO_CREATE);
-
-            locationDisplay.stop();
-            //结束监听
-            locationDisplay.removeLocationChangedListener(MyLocationChangeListener.this);
 
         }
     }
@@ -175,7 +186,7 @@ public class CheckLocation extends IntentService {
             if(isServiceRun){
                 setCheckTime.inAreaAlarm(testRadius,distance);
             }else {
-                setCheckTime.outAreaAlarm(distance);
+                setCheckTime.outAreaAlarm(testRadius,distance);
             }
 
             //解绑服务

@@ -18,6 +18,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- 允许应用程序使用startForeground -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!--调用手机振动器权限-->
+    <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application
         android:name=".utils.MyBaseApplication"

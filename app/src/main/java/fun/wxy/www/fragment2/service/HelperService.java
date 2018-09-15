@@ -1,11 +1,14 @@
 package fun.wxy.www.fragment2.service;
 
+import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import fun.wxy.www.fragment2.R;
+import fun.wxy.www.fragment2.notification.MyNotification;
 import fun.wxy.www.fragment2.utils.PollingUtils;
 
 public class HelperService extends Service {
@@ -14,17 +17,26 @@ public class HelperService extends Service {
 
     @Override
     public void onCreate() {
-        setCheckTime = new SetCheckTime();
-
-        setCheckTime.outAreaAlarm(10);
-
-        Log.i("fz","HelperService已启动...");
+        super.onCreate();
     }
-
 
     @Override
     public int onStartCommand(Intent intent,int flags,int startId){
         super.onStartCommand(intent,flags,startId);
+
+        //设置定时检查位置
+        setCheckTime = new SetCheckTime();
+        setCheckTime.outAreaAlarm(10,10);
+
+        Log.i("fz","HelperService已启动...");
+
+        final int NOTIFICATION_ID = 12;
+
+        MyNotification myNotification = new MyNotification(this);
+        myNotification.createNotificationChanel();
+        Notification notification = myNotification.showNotification(R.string.notification_status1,R.string.notification_ticker1,false);
+
+        startForeground(NOTIFICATION_ID,notification);
 
         return START_REDELIVER_INTENT;
     }
@@ -38,6 +50,10 @@ public class HelperService extends Service {
     @Override
     public void onDestroy() {
         PollingUtils.stopPollingService(CheckLocation.class);
+
+        stopForeground(true);
+
+        Log.i("fz","HelperService被销毁...");
     }
 
 
@@ -45,8 +61,8 @@ public class HelperService extends Service {
         /**
          * 尚未进入区域设置定时
          */
-        public void outAreaAlarm(double distance){
-            int time = setOutTime(distance);
+        public void outAreaAlarm(double r,double d){
+            int time = setOutTime(r,d);
 
             Log.i("fz","提醒时间间隔为："+time);
 
@@ -67,12 +83,15 @@ public class HelperService extends Service {
 
     /**
      * 根据不同的距离设置不同的提醒时间
-     * @param distance 距离
+     * @param r 监测半径
+     * @param d 实际距离
      * @return 时间，单位：秒
      */
-    private int setOutTime(double distance){
+    private int setOutTime(double r,double d){
 
         int time;
+
+        double distance = d - r;
 
         if(distance >= 5000){
             //距离大于5公里，半小时提醒
