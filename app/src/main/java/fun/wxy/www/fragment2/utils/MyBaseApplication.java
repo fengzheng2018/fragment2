@@ -14,6 +14,8 @@ public class MyBaseApplication extends Application {
     private Context context;
     private MapView mapView;
 
+    private MyHandlerToShowMap showMapHandler;
+
     @Override
     public void onCreate(){
         super.onCreate();
@@ -44,5 +46,13 @@ public class MyBaseApplication extends Application {
 
     public Context aContext(){
         return MyBaseApplication.this;
+    }
+
+    public MyHandlerToShowMap getShowMapHandler() {
+        return showMapHandler;
+    }
+
+    public void setShowMapHandler(MyHandlerToShowMap showMapHandler) {
+        this.showMapHandler = showMapHandler;
     }
 }

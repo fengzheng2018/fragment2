@@ -1,26 +1,29 @@
 package fun.wxy.www.fragment2.service;
 
-import android.app.ActivityManager;
 import android.app.IntentService;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.esri.arcgisruntime.location.LocationDataSource;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 
-import java.util.List;
-
+import fun.wxy.www.fragment2.broadcast.BroadCastServiceStop;
 import fun.wxy.www.fragment2.model.MyRecord;
 import fun.wxy.www.fragment2.utils.MyBaseApplication;
+import fun.wxy.www.fragment2.utils.ServiceIsRun;
 
 public class CheckLocation extends IntentService {
 
     private double distance;
+
+    private BroadCastServiceStop broadCastReceiver;
+    private LocalBroadcastManager broadcastManager;
 
     //测试半径
     private final double testRadius = 100.0;
@@ -49,6 +52,15 @@ public class CheckLocation extends IntentService {
     public void onDestroy(){
         super.onDestroy();
         Log.i("fz","检查位置的服务类被销毁");
+
+        //移除广播接受器
+        try{
+            broadcastManager.unregisterReceiver(broadCastReceiver);
+        }catch (Exception e){
+            e.printStackTrace();
+            Log.i("fz","在检查位置服务中移除广播接收器时异常");
+        }
+
     }
 
     /**
@@ -60,6 +72,9 @@ public class CheckLocation extends IntentService {
 
         private MyLocationChangeListener(LocationDisplay locationDisplay) {
             this.locationDisplay = locationDisplay;
+
+            broadcastManager = LocalBroadcastManager.getInstance(CheckLocation.this);
+            broadCastReceiver = new BroadCastServiceStop();
         }
 
         // 测试位置
@@ -79,7 +94,7 @@ public class CheckLocation extends IntentService {
                 distance = distanceOfTwoPoints(lat1,lng1,lat2,lng2);
 
                 //判断服务是否在运行
-                isServiceRun = isServiceExisted(SaveLocation.class.getName());
+                isServiceRun = ServiceIsRun.isServiceExisted(SaveLocation.class.getName(),CheckLocation.this);
 
                 Log.i("fz","计算后的距离为："+distance);
                 Log.i("fz","判断服务是否运行："+isServiceRun);
@@ -104,6 +119,14 @@ public class CheckLocation extends IntentService {
                         Log.i("fz","准备关闭保存位置的服务");
                         Intent stopLocationService = new Intent(CheckLocation.this,SaveLocation.class);
                         stopService(stopLocationService);
+
+                        //注册广播监听器
+                        IntentFilter intentFilter = new IntentFilter();
+                        intentFilter.addAction("fun.wxy.www.saveLocationStop");
+                        broadcastManager.registerReceiver(broadCastReceiver,intentFilter);
+                        //发送广播
+                        Intent intent = new Intent("fun.wxy.www.saveLocationStop");
+                        broadcastManager.sendBroadcast(intent);
                     }
                 }
 
@@ -147,34 +170,6 @@ public class CheckLocation extends IntentService {
         s = Math.round(s * 10000) / 10000;
 
         return s;
-    }
-
-
-    /**
-     * 判断服务是否运行
-     * @param className 要检查的服务类名
-     * @return 服务在运行，返回true
-     */
-    private boolean isServiceExisted(String className){
-
-        boolean isWork = false;
-
-        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-
-        List<ActivityManager.RunningServiceInfo> serviceInfoList = activityManager.getRunningServices(Integer.MAX_VALUE);
-
-        if(serviceInfoList.size() <= 0){
-            return false;
-        }else {
-            for(int i=0; i<serviceInfoList.size(); i++){
-                String name = serviceInfoList.get(i).service.getClassName();
-                if(name.equals(className)){
-                    isWork = true;
-                    break;
-                }
-            }
-        }
-        return isWork;
     }
 
 
