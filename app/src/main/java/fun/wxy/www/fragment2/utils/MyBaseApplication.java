@@ -1,11 +1,15 @@
 package fun.wxy.www.fragment2.utils;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 
 import com.esri.arcgisruntime.mapping.view.MapView;
 
 import org.litepal.LitePal;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MyBaseApplication extends Application {
 
@@ -16,12 +20,16 @@ public class MyBaseApplication extends Application {
 
     private MyHandlerToShowMap showMapHandler;
 
+    private List<Activity> activityList;
+
     @Override
     public void onCreate(){
         super.onCreate();
         LitePal.initialize(MyBaseApplication.this);
 
         baseApplication = MyBaseApplication.this;
+
+        activityList = new ArrayList<>();
     }
 
     public static MyBaseApplication getInstance(){
@@ -54,5 +62,33 @@ public class MyBaseApplication extends Application {
 
     public void setShowMapHandler(MyHandlerToShowMap showMapHandler) {
         this.showMapHandler = showMapHandler;
+    }
+
+    /**
+     * 添加activity
+     */
+    public void addActivity(Activity activity){
+        if(!activityList.contains(activity)){
+            activityList.add(activity);
+        }
+    }
+
+    /**
+     * 销毁单个activity
+     */
+    public void removeActivity(Activity activity){
+        if(activityList.contains(activity)){
+            activityList.remove(activity);
+            activity.finish();
+        }
+    }
+
+    /**
+     * 销毁所有activity
+     */
+    public void removeAllActivity(){
+        for(Activity activity : activityList){
+            activity.finish();
+        }
     }
 }

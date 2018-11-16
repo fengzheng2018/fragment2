@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,10 +45,19 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private MapView mMapView;
     private ShowMap showMap;
 
+    private MyBaseApplication baseApplication;
+
+    private long pressTime;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //BaseApplication为空，获取BaseApplication对象
+        if(baseApplication == null){
+            baseApplication = (MyBaseApplication) getApplication();
+        }
 
         mContext = MainActivity.this;
 
@@ -84,6 +94,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     protected void onStart(){
         super.onStart();
 
+        baseApplication.addActivity(this);
+
         //中间内容显示区域
         mMapView = findViewById(R.id.MapView_center_container);
 
@@ -96,8 +108,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         baseApplication.setMapView(mMapView);
 
         showMap = new ShowMap(MainActivity.this,dingwei,zoomControls);
+        //初始化配置
         showMap.initMap();
+        //绘制地图主要界面
         showMap.drawMap();
+        //开启辅助服务类
         showMap.startAlarm();
 
         ZoominListener zoominListener = new ZoominListener(mMapView,zoomControls);
@@ -172,6 +187,30 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             return false;
         }
     };
+
+    /**
+     * 重写onKeyDown方法
+     */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event){
+        if(keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0){
+            exit();
+            return true;
+        }
+        return super.onKeyDown(keyCode,event);
+    }
+
+    /**
+     * 退出应用方法
+     */
+    private void exit(){
+        if((System.currentTimeMillis() - pressTime) > 2000){
+            Toast.makeText(this,"再按一次退出应用",Toast.LENGTH_SHORT).show();
+            this.pressTime = System.currentTimeMillis();
+        }else{
+            baseApplication.removeAllActivity();
+        }
+    }
 
 
     //重写onRequestPermissionResult方法

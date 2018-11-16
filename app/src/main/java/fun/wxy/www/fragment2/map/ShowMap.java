@@ -118,9 +118,12 @@ public class ShowMap {
      */
     public void startAlarm(){
         if(permissions()){
-            // 开启服务
-            Intent startHelperService = new Intent(mContext, HelperService.class);
-            mContext.startService(startHelperService);
+            //检查服务是否运行
+            boolean isHelperServiceRun = ServiceIsRun.isServiceExisted(HelperService.class.getName(),mContext);
+            if(!isHelperServiceRun){
+                Intent startHelperService = new Intent(mContext, HelperService.class);
+                mContext.startService(startHelperService);
+            }
         }
     }
 

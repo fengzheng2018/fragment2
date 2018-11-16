@@ -78,8 +78,8 @@ public class CheckLocation extends IntentService {
         }
 
         // 测试位置
-        final double lat2 = 25.063463;
-        final double lng2 = 102.758171;
+        final double lat2 = 25.060555555555556;
+        final double lng2 = 102.75277777777778;
 
         @Override
         public void onLocationChanged(LocationDisplay.LocationChangedEvent locationChangedEvent) {
